@@ -1,19 +1,19 @@
 spring:
-    datasource:
-        url: ${DATABASE_URL}
-        driver-class-name: org.postgresql.Driver
-
-jpa:
-  database-platform: org.hibernate.dialect.PostgreSQLDialect
-  hibernate:
-    ddl-auto: create-drop
-  show-sql: false
-  properties:
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      jdbc:
-        lob:
-          non_contextual_creation: true
-      format_sql: false
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        format_sql: false
+        globally_quoted_identifiers: false
 
 server:
   port: ${PORT:8080}
