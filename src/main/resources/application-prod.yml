@@ -1,0 +1,19 @@
+spring:
+    datasource:
+        url: ${DATABASE_URL}
+        driver-class-name: org.postgresql.Driver
+
+jpa:
+  database-platform: org.hibernate.dialect.PostgreSQLDialect
+  hibernate:
+    ddl-auto: update
+  show-sql: false
+  properties:
+    hibernate:
+      jdbc:
+        lob:
+          non_contextual_creation: true
+      format_sql: false
+
+server:
+  port: ${PORT:8080}
