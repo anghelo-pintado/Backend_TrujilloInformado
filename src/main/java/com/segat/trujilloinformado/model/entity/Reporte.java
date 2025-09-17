@@ -1,15 +1,17 @@
 package com.segat.trujilloinformado.model.entity;
 
-import com.segat.trujilloinformado.model.enums.EstadoReporte;
-import com.segat.trujilloinformado.model.enums.TipoProblema;
+import com.segat.trujilloinformado.model.entity.enums.Priority;
+import com.segat.trujilloinformado.model.entity.enums.Status;
+import com.segat.trujilloinformado.model.entity.enums.Type;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,19 +25,28 @@ public class Reporte {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_problema", nullable = false)
-    private TipoProblema tipoProblema;
+    @Column(nullable = false)
+    private Type type;
+    private String description;
 
-    @Column(name = "descripcion", columnDefinition = "TEXT", nullable = false)
-    private String descripcion;
+    private double lat;
+    private double lng;
+    private String address;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false)
-    @Builder.Default
-    private EstadoReporte estado = EstadoReporte.PENDIENTE;
+    @Column(columnDefinition = "TEXT") // Almacenar URLs separadas por comas
+    private String photos;
+
+    private Priority priority;
+    private String zone;
+    private Long citizenId;
+    private String citizenName;
+    private String citizenPhone;
+    private Status status;
 
     @CreationTimestamp
-    @Column(name = "fecha_creacion", nullable = false, updatable = false)
-    private LocalDateTime fechaCreacion;
+    private Instant createdAt;
+    @UpdateTimestamp
+    private Instant updatedAt;
 }
+
+

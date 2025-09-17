@@ -14,6 +14,16 @@ spring:
             non_contextual_creation: true
         format_sql: false
         globally_quoted_identifiers: false
+  servlet:
+    multipart:
+      max-file-size: 5MB      # Límite por archivo
+      max-request-size: 10MB  # Límite total por petición
 
 server:
   port: ${PORT:8080}
+
+cloudinary:
+    cloud-name: ${CLOUDINARY_CLOUD_NAME}
+    api-key: ${CLOUDINARY_API_KEY}
+    api-secret: ${CLOUDINARY_API_SECRET}
+

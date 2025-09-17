@@ -25,6 +25,11 @@ spring:
   validation:
     enabled: true
 
+  servlet:
+    multipart:
+      max-file-size: 5MB      # Límite por archivo
+      max-request-size: 10MB  # Límite total por petición
+
 logging:
   level:
     com.municipio.limpieza: DEBUG
@@ -43,3 +48,8 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operations-sorter: method
+
+cloudinary:
+  cloud-name: dortn1fxq
+  api-key: 519666568453567
+  api-secret: naO__6TbtYJfPtDHwJzPmOQGg-E

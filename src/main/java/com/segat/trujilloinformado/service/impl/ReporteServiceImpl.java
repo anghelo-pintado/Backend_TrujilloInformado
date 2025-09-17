@@ -3,7 +3,7 @@ package com.segat.trujilloinformado.service.impl;
 import com.segat.trujilloinformado.model.dao.ReporteDao;
 import com.segat.trujilloinformado.model.dto.ReporteDto;
 import com.segat.trujilloinformado.model.entity.Reporte;
-import com.segat.trujilloinformado.model.enums.EstadoReporte;
+import com.segat.trujilloinformado.model.entity.enums.Status;
 import com.segat.trujilloinformado.service.IReporteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,10 +20,18 @@ public class ReporteServiceImpl implements IReporteService {
     @Override
     public Reporte save(ReporteDto reporteDto) {
         Reporte reporte = Reporte.builder()
-                .id(reporteDto.getIdReporte())
-                .descripcion(reporteDto.getDescripcion())
-                .tipoProblema(reporteDto.getTipoProblema())
-                .estado(EstadoReporte.PENDIENTE)
+                .type(reporteDto.getType())
+                .description(reporteDto.getDescription())
+                .lat(reporteDto.getLocation().getLat())
+                .lng(reporteDto.getLocation().getLng())
+                .address(reporteDto.getLocation().getAddress())
+                .photos(String.join(",", reporteDto.getPhotos()))
+                .priority(reporteDto.getPriority())
+                .zone(reporteDto.getZone())
+                .citizenId(Long.valueOf(reporteDto.getCitizenId()))
+                .citizenName(reporteDto.getCitizenName())
+                .citizenPhone(reporteDto.getCitizenPhone())
+                .status(reporteDto.getStatus() != null ? reporteDto.getStatus() : Status.PENDIENTE)
                 .build();
         return reporteDao.save(reporte);
     }
