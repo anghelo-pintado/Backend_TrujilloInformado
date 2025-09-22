@@ -25,6 +25,11 @@ public class Reporte {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long citizenId;
+    private String citizenName;
+    private String citizenEmail;
+    private String citizenPhone;
+
     @Column(nullable = false)
     private Type type;
     private String description;
@@ -36,17 +41,21 @@ public class Reporte {
     @Column(columnDefinition = "TEXT") // Almacenar URLs separadas por comas
     private String photos;
 
+    private Status status;
+
     private Priority priority;
     private String zone;
-    private Long citizenId;
-    private String citizenName;
-    private String citizenPhone;
-    private Status status;
 
     @CreationTimestamp
     private Instant createdAt;
     @UpdateTimestamp
     private Instant updatedAt;
+
+    private String assignedTo;
+    private String assignedBy;
+
+    @UpdateTimestamp
+    private Instant assignedAt;
 }
 
 

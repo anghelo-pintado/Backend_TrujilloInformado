@@ -49,6 +49,7 @@ public class ReporteController {
                                     .citizenId(String.valueOf(reporteSave.getCitizenId()))
                                     .citizenName(reporteSave.getCitizenName())
                                     .citizenPhone(reporteSave.getCitizenPhone())
+                                    .citizenEmail(reporteSave.getCitizenEmail())
                                     .createdAt(reporteSave.getCreatedAt())
                                     .build())
                             .build()
@@ -63,39 +64,39 @@ public class ReporteController {
         }
     }
 
-//    @PutMapping("reporte/{id}")
-//    public ResponseEntity<?> update(@RequestBody ReporteDto reporteDto, @PathVariable Long id) {
-//        Reporte reporteUpdate = null;
-//        try {
-//            if (reporteService.existsById(id)) {
-//                reporteDto.setId(id);
-//                reporteUpdate = reporteService.save(reporteDto);
-//                return new ResponseEntity<>(
-//                        MessageResponse.builder()
-//                                .objecto(ReporteDto.builder()
-//                                        .id(reporteUpdate.getId())
-//                                        .description(reporteUpdate.getDescription())
-//                                        .type(reporteUpdate.getType())
-//                                        .status(Status.PENDIENTE)
-//                                        .build())
-//                                .build()
-//                        , HttpStatus.CREATED);
-//            }
-//            return new ResponseEntity<>(
-//                    MessageResponse.builder()
-//                            .mensaje("El reporte con ID " + id + " no existe.")
-//                            .build()
-//                    , HttpStatus.NOT_FOUND);
-//        }
-//        catch (DataAccessException e) {
-//            return new ResponseEntity<>(
-//                    MessageResponse.builder()
-//                            .mensaje("Error al actualizar el reporte: " + e.getMessage())
-//                            .build()
-//                    , HttpStatus.METHOD_NOT_ALLOWED);
-//        }
-//    }
-//
+    @PutMapping("reporte/{id}")
+    public ResponseEntity<?> update(@RequestBody ReporteDto reporteDto, @PathVariable Long id) {
+        Reporte reporteUpdate = null;
+        try {
+            if (reporteService.existsById(id)) {
+                reporteDto.setId(id);
+                reporteUpdate = reporteService.save(reporteDto);
+                return new ResponseEntity<>(
+                        MessageResponse.builder()
+                                .objecto(ReporteDto.builder()
+                                        .id(reporteUpdate.getId())
+                                        .status(reporteUpdate.getStatus())
+                                        .assignedTo(reporteUpdate.getAssignedTo())
+                                        .assignedBy(reporteUpdate.getAssignedBy())
+                                        .build())
+                                .build()
+                        , HttpStatus.CREATED);
+            }
+            return new ResponseEntity<>(
+                    MessageResponse.builder()
+                            .mensaje("El reporte con ID " + id + " no existe.")
+                            .build()
+                    , HttpStatus.NOT_FOUND);
+        }
+        catch (DataAccessException e) {
+            return new ResponseEntity<>(
+                    MessageResponse.builder()
+                            .mensaje("Error al actualizar el reporte: " + e.getMessage())
+                            .build()
+                    , HttpStatus.METHOD_NOT_ALLOWED);
+        }
+    }
+
 //    @DeleteMapping("reporte/{id}")
 //    public ResponseEntity<?> delete(@PathVariable Long id) {
 //        Reporte reporte = null;
@@ -175,7 +176,7 @@ public class ReporteController {
 
     @PostMapping("/reporte/cargar")
     public ResponseEntity<String> uploadPhoto(@RequestParam("file") MultipartFile file) {
-        String simulatedUrl = cloudinaryService.uploadFile(file);
+        String simulatedUrl = cloudinaryService.uploadFile(file, "reportes");
         return ResponseEntity.ok(simulatedUrl);
     }
 }

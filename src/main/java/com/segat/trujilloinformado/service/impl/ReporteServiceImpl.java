@@ -20,6 +20,7 @@ public class ReporteServiceImpl implements IReporteService {
     @Override
     public Reporte save(ReporteDto reporteDto) {
         Reporte reporte = Reporte.builder()
+                .id(reporteDto.getId())
                 .type(reporteDto.getType())
                 .description(reporteDto.getDescription())
                 .lat(reporteDto.getLocation().getLat())
@@ -31,7 +32,12 @@ public class ReporteServiceImpl implements IReporteService {
                 .citizenId(Long.valueOf(reporteDto.getCitizenId()))
                 .citizenName(reporteDto.getCitizenName())
                 .citizenPhone(reporteDto.getCitizenPhone())
+                .citizenEmail(reporteDto.getCitizenEmail())
                 .status(reporteDto.getStatus() != null ? reporteDto.getStatus() : Status.PENDIENTE)
+                .createdAt(reporteDto.getCreatedAt())
+                .updatedAt(reporteDto.getUpdatedAt())
+                .assignedTo(reporteDto.getAssignedTo())
+                .assignedBy(reporteDto.getAssignedBy())
                 .build();
         return reporteDao.save(reporte);
     }

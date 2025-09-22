@@ -29,6 +29,9 @@ public class ReporteDto {
     private String citizenId;
     private String citizenName;
     private String citizenPhone;
+    private String citizenEmail;
+    private String assignedTo;
+    private String assignedBy;
     private Instant createdAt;
     private Instant updatedAt;
 }
