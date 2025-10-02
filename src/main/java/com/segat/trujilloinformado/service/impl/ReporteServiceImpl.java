@@ -6,6 +6,9 @@ import com.segat.trujilloinformado.model.entity.Reporte;
 import com.segat.trujilloinformado.model.entity.enums.Status;
 import com.segat.trujilloinformado.service.IReporteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,5 +64,10 @@ public class ReporteServiceImpl implements IReporteService {
     @Override
     public List<Reporte> findAll() {
         return (List<Reporte>) reporteDao.findAll();
+    }
+
+    @Override
+    public Page<Reporte> findAll(Pageable pageable) {
+        return reporteDao.findAll(pageable);
     }
 }

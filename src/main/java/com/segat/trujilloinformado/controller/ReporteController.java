@@ -8,6 +8,8 @@ import com.segat.trujilloinformado.service.IReporteService;
 import com.segat.trujilloinformado.service.impl.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -144,34 +146,40 @@ public class ReporteController {
 //                , HttpStatus.OK);
 //    }
 
-    @GetMapping("/reportes")
-    public ResponseEntity<?> showAll() {
-        List<Reporte> reportes = reporteService.findAll();
-        List<ReporteDto> dtos = reportes.stream().map(reporte ->
-                ReporteDto.builder()
-                        .id(reporte.getId())
-                        .type(reporte.getType())
-                        .description(reporte.getDescription())
-                        .location(
-                                Location.builder()
-                                        .lat(reporte.getLat())
-                                        .lng(reporte.getLng())
-                                        .address(reporte.getAddress())
-                                        .build()
-                        )
-                        .photos(Arrays.asList(reporte.getPhotos() != null ? reporte.getPhotos().split(",") : new String[0]))
-                        .priority(reporte.getPriority())
-                        .zone(reporte.getZone())
-                        .status(reporte.getStatus())
-                        .citizenId(reporte.getCitizenId() != null ? reporte.getCitizenId().toString() : null)
-                        .citizenName(reporte.getCitizenName())
-                        .citizenPhone(reporte.getCitizenPhone())
-                        .createdAt(reporte.getCreatedAt())
-                        .updatedAt(reporte.getUpdatedAt())
-                        .build()
-        ).toList();
+//    @GetMapping("/reportes")
+//    public ResponseEntity<?> showAll() {
+//        List<Reporte> reportes = reporteService.findAll();
+//        List<ReporteDto> dtos = reportes.stream().map(reporte ->
+//                ReporteDto.builder()
+//                        .id(reporte.getId())
+//                        .type(reporte.getType())
+//                        .description(reporte.getDescription())
+//                        .location(
+//                                Location.builder()
+//                                        .lat(reporte.getLat())
+//                                        .lng(reporte.getLng())
+//                                        .address(reporte.getAddress())
+//                                        .build()
+//                        )
+//                        .photos(Arrays.asList(reporte.getPhotos() != null ? reporte.getPhotos().split(",") : new String[0]))
+//                        .priority(reporte.getPriority())
+//                        .zone(reporte.getZone())
+//                        .status(reporte.getStatus())
+//                        .citizenId(reporte.getCitizenId() != null ? reporte.getCitizenId().toString() : null)
+//                        .citizenName(reporte.getCitizenName())
+//                        .citizenPhone(reporte.getCitizenPhone())
+//                        .createdAt(reporte.getCreatedAt())
+//                        .updatedAt(reporte.getUpdatedAt())
+//                        .build()
+//        ).toList();
+//
+//        return ResponseEntity.ok(dtos);
+//    }
 
-        return ResponseEntity.ok(dtos);
+    @GetMapping("/reportes")
+    public ResponseEntity<?> getReports(Pageable pageable) {
+        Page<Reporte> reportes = reporteService.findAll(pageable);
+        return ResponseEntity.ok(reportes);
     }
 
     @PostMapping("/reporte/cargar")
