@@ -1,3 +1,11 @@
+application:
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration: ${JWT_EXPIRATION} # en milisegundos (ejemplo: 86400000 = 1 día)
+      refresh-token:
+        expiration: ${JWT_REFRESH_EXPIRATION} # en milisegundos (ejemplo: 604800000 = 7 días)
+
 spring:
   datasource:
     url: ${DATABASE_URL}

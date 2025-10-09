@@ -2,6 +2,7 @@ package com.segat.trujilloinformado.controller;
 
 import com.segat.trujilloinformado.model.dto.ReporteDto;
 import com.segat.trujilloinformado.model.entity.Reporte;
+import com.segat.trujilloinformado.model.entity.Usuario;
 import com.segat.trujilloinformado.model.entity.interno.Location;
 import com.segat.trujilloinformado.model.payload.MessageResponse;
 import com.segat.trujilloinformado.service.IReporteService;
@@ -16,11 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
-@CrossOrigin(origins = "*")
 public class ReporteController {
     @Autowired
     private IReporteService reporteService;
@@ -31,6 +30,7 @@ public class ReporteController {
     @PostMapping("reporte")
     public ResponseEntity<?> create(@RequestBody ReporteDto reporteDto) {
         Reporte reporteSave = null;
+        Usuario usuario = null;
         try {
             reporteSave = reporteService.save(reporteDto);
             return new ResponseEntity<>(
@@ -48,10 +48,10 @@ public class ReporteController {
                                     .priority(reporteSave.getPriority())
                                     .zone(reporteSave.getZone())
                                     .status(reporteSave.getStatus())
-                                    .citizenId(String.valueOf(reporteSave.getCitizenId()))
-                                    .citizenName(reporteSave.getCitizenName())
-                                    .citizenPhone(reporteSave.getCitizenPhone())
-                                    .citizenEmail(reporteSave.getCitizenEmail())
+                                    .citizenId(String.valueOf(reporteSave.getCitizen().getId()))
+                                    .citizenName(reporteSave.getCitizen().getFirstname() + " " + reporteSave.getCitizen().getLastname())
+                                    .citizenPhone(reporteSave.getCitizen().getPhone())
+                                    .citizenEmail(reporteSave.getCitizen().getEmail())
                                     .createdAt(reporteSave.getCreatedAt())
                                     .build())
                             .build()
@@ -124,27 +124,27 @@ public class ReporteController {
 //        }
 //    }
 //
-//    @GetMapping("reporte/{id}")
-//    public ResponseEntity<?> showById(@PathVariable Long id) {
-//        Reporte reporte = reporteService.findById(id);
-//        if (reporte == null) {
-//            return new ResponseEntity<>(
-//                    MessageResponse.builder()
-//                            .mensaje("El reporte con ID " + id + " no existe.")
-//                            .build()
-//                    , HttpStatus.NOT_FOUND);
-//        }
-//        return new ResponseEntity<>(
-//                MessageResponse.builder()
-//                        .objecto(ReporteDto.builder()
-//                                .id(reporte.getId())
-//                                .description(reporte.getDescription())
-//                                .type(reporte.getType())
-//                                .status(Status.PENDIENTE)
-//                                .build())
-//                        .build()
-//                , HttpStatus.OK);
-//    }
+    @GetMapping("reporte/{id}")
+    public ResponseEntity<?> showById(@PathVariable Long id) {
+        Reporte reporte = reporteService.findById(id);
+        if (reporte == null) {
+            return new ResponseEntity<>(
+                    MessageResponse.builder()
+                            .mensaje("El reporte con ID " + id + " no existe.")
+                            .build()
+                    , HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(
+                MessageResponse.builder()
+                        .objecto(ReporteDto.builder()
+                                .id(reporte.getId())
+                                .description(reporte.getDescription())
+                                .type(reporte.getType())
+                                .status(reporte.getStatus())
+                                .build())
+                        .build()
+                , HttpStatus.OK);
+    }
 
 //    @GetMapping("/reportes")
 //    public ResponseEntity<?> showAll() {
@@ -179,7 +179,27 @@ public class ReporteController {
     @GetMapping("/reportes")
     public ResponseEntity<?> getReports(Pageable pageable) {
         Page<Reporte> reportes = reporteService.findAll(pageable);
-        return ResponseEntity.ok(reportes);
+        Page<ReporteDto> dtos = reportes.map(reporte -> ReporteDto.builder()
+                .id(reporte.getId())
+                .type(reporte.getType())
+                .description(reporte.getDescription())
+                .location(Location.builder()
+                        .lat(reporte.getLat())
+                        .lng(reporte.getLng())
+                        .address(reporte.getAddress())
+                        .build())
+                .photos(Arrays.asList(reporte.getPhotos() != null ? reporte.getPhotos().split(",") : new String[0]))
+                .priority(reporte.getPriority())
+                .zone(reporte.getZone())
+                .status(reporte.getStatus())
+                .citizenId(reporte.getCitizen() != null ? String.valueOf(reporte.getCitizen().getId()) : null)
+                .citizenName(reporte.getCitizen() != null ? reporte.getCitizen().getFirstname() + " " + reporte.getCitizen().getLastname() : null)
+                .citizenPhone(reporte.getCitizen() != null ? reporte.getCitizen().getPhone() : null)
+                .citizenEmail(reporte.getCitizen() != null ? reporte.getCitizen().getEmail() : null)
+                .createdAt(reporte.getCreatedAt())
+                .updatedAt(reporte.getUpdatedAt())
+                .build());
+        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping("/reporte/cargar")

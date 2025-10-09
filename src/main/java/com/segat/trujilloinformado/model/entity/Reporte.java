@@ -12,7 +12,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reportes")
@@ -25,10 +24,9 @@ public class Reporte {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long citizenId;
-    private String citizenName;
-    private String citizenEmail;
-    private String citizenPhone;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "citizen_id", nullable = false)
+    private Usuario citizen; // Ciudadano que reporta
 
     @Column(nullable = false)
     private Type type;
