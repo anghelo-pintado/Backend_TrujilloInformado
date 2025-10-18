@@ -10,7 +10,7 @@ import java.util.List;
 public interface IReporteService {
     Reporte save(ReporteDto reporteDto);
     Reporte findById(Long id);
-    Page<Reporte> findByCitizenId(Long citizenId, Pageable pageable);
+    Page<Reporte> findByCitizenEmail(String email, Pageable pageable);
     void delete(Reporte reporte);
     boolean existsById(Long id);
     List<Reporte> findAll();

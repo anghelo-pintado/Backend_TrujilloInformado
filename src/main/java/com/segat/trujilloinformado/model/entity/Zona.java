@@ -6,7 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @Table(name = "zonas")
@@ -23,8 +22,9 @@ public class Zona {
     private String name;
 
 
-    @Column(name = "supervisor_id")
-    private Usuario supervisorId;
+    @JoinColumn(name = "supervisor_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Usuario supervisor;
 
     // jsonb field for boundaries
     @Column(columnDefinition = "jsonb")

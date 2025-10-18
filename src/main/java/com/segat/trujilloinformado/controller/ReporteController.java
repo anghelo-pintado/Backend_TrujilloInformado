@@ -13,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -179,6 +181,20 @@ public class ReporteController {
     @GetMapping("/reportes")
     public ResponseEntity<?> getReports(Pageable pageable) {
         Page<Reporte> reportes = reporteService.findAll(pageable);
+        return getPageResponseEntity(reportes);
+    }
+
+    @GetMapping("/reportes/me")
+    public ResponseEntity<Page<?>> getCurrentUserReports(
+            @AuthenticationPrincipal UserDetails userDetails, // Spring Security inyecta al usuario autenticado
+            Pageable pageable) { // Spring maneja automáticamente los parámetros ?page=0&size=10
+
+        String citizenEmail = userDetails.getUsername(); // O el ID, según lo que guardes en el token
+        Page<Reporte> reportes = reporteService.findByCitizenEmail(citizenEmail, pageable);
+        return getPageResponseEntity(reportes);
+    }
+
+    private ResponseEntity<Page<?>> getPageResponseEntity(Page<Reporte> reportes) {
         Page<ReporteDto> dtos = reportes.map(reporte -> ReporteDto.builder()
                 .id(reporte.getId())
                 .type(reporte.getType())
