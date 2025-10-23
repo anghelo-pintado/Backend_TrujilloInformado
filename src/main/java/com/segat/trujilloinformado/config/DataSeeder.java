@@ -19,7 +19,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.lang.reflect.Array;
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 
 @Configuration
@@ -126,18 +128,45 @@ public class DataSeeder {
                         .birthDate(LocalDate.of(1990, 1, 1))
                         .build());
             }
-            if (usuarioRepository.findByEmail("colaboradorzona4-1@gmail.com").isEmpty()) {
-                usuarioRepository.save(Usuario.builder()
-                        .email("colaboradorzona4-1@gmail.com")
-                        .password(passwordEncoder.encode("colaboradorzona4-1"))
-                        .role(Role.TRABAJADOR)
-                        .zone(zonaDao.findByNumber(4).orElseThrow())
-                        .firstname("Colaborador")
-                        .lastname("Zona 4 - 1")
-                        .phone("964144695")
-                        .birthDate(LocalDate.of(1995, 1, 1))
-                        .build());
+            for (int i = 0; i < 5; i++) {
+                for ( int j = 0; j < 5; j++) {
+                    String email = "colaboradorzona" + (i + 1) + "-" + (j + 1) + "@gmail.com";
+                    if (usuarioRepository.findByEmail(email).isEmpty()) {
+                        usuarioRepository.save(Usuario.builder()
+                                .email(email)
+                                .password(passwordEncoder.encode("colaboradorzona" + (i + 1) + "-" + (j + 1)))
+                                .role(Role.TRABAJADOR)
+                                .zone(zonaDao.findByNumber(i + 1).orElseThrow())
+                                .firstname("Colaborador")
+                                .lastname("Zona " + (i + 1) + " - " + (j + 1))
+                                .phone("987654321")
+                                .birthDate(LocalDate.of(1995, 1, 1))
+                                .build());
+                    }
+                }
             }
+            ArrayList<String> turnos = new ArrayList<>();
+            turnos.add("mañana");
+            turnos.add("tarde");
+            turnos.add("noche");
+            for ( int j = 0; j < 3; j++) {
+                for (int k = 1; k <= 5; k++) {
+                    String email = "colaboradorzona6" + turnos.get(j) + "-" + k + "@gmail.com";
+                    if (usuarioRepository.findByEmail(email).isEmpty()) {
+                        usuarioRepository.save(Usuario.builder()
+                                .email(email)
+                                .password(passwordEncoder.encode("colaboradorzona6" + turnos.get(j) + "-" + k))
+                                .role(Role.TRABAJADOR)
+                                .zone(zonaDao.findByNumber(6).orElseThrow())
+                                .firstname("Colaborador Zona 6")
+                                .lastname(turnos.get(j) + " - " + k)
+                                .phone("987654321")
+                                .birthDate(LocalDate.of(1995, 1, 1))
+                                .build());
+                    }
+                }
+            }
+            System.out.println("✅ Usuarios cargados: " + usuarioRepository.count());
         };
     }
 

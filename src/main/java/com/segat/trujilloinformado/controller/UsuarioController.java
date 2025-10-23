@@ -30,6 +30,7 @@ public class UsuarioController {
             TrabajadorDto.builder()
                     .id(trabajador.getId())
                     .name(trabajador.getFirstname())
+                    .lastname(trabajador.getLastname())
                     .build()
         ).toList();
         return ResponseEntity.ok(dtos);
