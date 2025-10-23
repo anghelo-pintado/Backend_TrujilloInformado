@@ -6,19 +6,24 @@ import com.segat.trujilloinformado.model.entity.Usuario;
 import com.segat.trujilloinformado.model.entity.interno.Location;
 import com.segat.trujilloinformado.model.payload.MessageResponse;
 import com.segat.trujilloinformado.service.IReporteService;
+import com.segat.trujilloinformado.service.IUsuarioService;
 import com.segat.trujilloinformado.service.impl.CloudinaryService;
+import org.apache.catalina.LifecycleState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -27,12 +32,14 @@ public class ReporteController {
     private IReporteService reporteService;
 
     @Autowired
+    private IUsuarioService usuarioService;
+
+    @Autowired
     private CloudinaryService cloudinaryService;
 
     @PostMapping("reporte")
     public ResponseEntity<?> create(@RequestBody ReporteDto reporteDto) {
         Reporte reporteSave = null;
-        Usuario usuario = null;
         try {
             reporteSave = reporteService.save(reporteDto);
             return new ResponseEntity<>(
@@ -48,7 +55,7 @@ public class ReporteController {
                                             .build())
                                     .photos(reporteDto.getPhotos())
                                     .priority(reporteSave.getPriority())
-                                    .zone(reporteSave.getZone())
+                                    .zone(reporteSave.getZone().getName())
                                     .status(reporteSave.getStatus())
                                     .citizenId(String.valueOf(reporteSave.getCitizen().getId()))
                                     .citizenName(reporteSave.getCitizen().getFirstname() + " " + reporteSave.getCitizen().getLastname())
@@ -80,8 +87,6 @@ public class ReporteController {
                                 .objecto(ReporteDto.builder()
                                         .id(reporteUpdate.getId())
                                         .status(reporteUpdate.getStatus())
-                                        .assignedTo(reporteUpdate.getAssignedTo())
-                                        .assignedBy(reporteUpdate.getAssignedBy())
                                         .build())
                                 .build()
                         , HttpStatus.CREATED);
@@ -194,6 +199,24 @@ public class ReporteController {
         return getPageResponseEntity(reportes);
     }
 
+    @GetMapping("/reportes/supervisor/me")
+    public ResponseEntity<Page<?>> getZoneReports(
+            @AuthenticationPrincipal UserDetails userDetails,
+            Pageable pageable) {
+
+        String supervisorEmail = userDetails.getUsername();
+        Usuario supervisor = usuarioService.findByEmailWithZone(supervisorEmail)
+                .orElseThrow(() -> new IllegalStateException("Supervisor not found"));
+
+        Integer zoneNumber = supervisor.getZone().getNumber(); // now initialized
+        Page<Reporte> reportes = reporteService.findByZoneNumber(zoneNumber, pageable);
+        List<Reporte> filteredReportes = reportes.stream()
+                .filter(reporte -> reporte.getAssignedTo() == null)
+                .toList();
+        Page<Reporte> filteredPage = new PageImpl<>(filteredReportes, reportes.getPageable(), filteredReportes.size());
+        return getPageResponseEntity(filteredPage);
+    }
+
     private ResponseEntity<Page<?>> getPageResponseEntity(Page<Reporte> reportes) {
         Page<ReporteDto> dtos = reportes.map(reporte -> ReporteDto.builder()
                 .id(reporte.getId())
@@ -206,7 +229,7 @@ public class ReporteController {
                         .build())
                 .photos(Arrays.asList(reporte.getPhotos() != null ? reporte.getPhotos().split(",") : new String[0]))
                 .priority(reporte.getPriority())
-                .zone(reporte.getZone())
+                .zone(reporte.getZone().getName())
                 .status(reporte.getStatus())
                 .citizenId(reporte.getCitizen() != null ? String.valueOf(reporte.getCitizen().getId()) : null)
                 .citizenName(reporte.getCitizen() != null ? reporte.getCitizen().getFirstname() + " " + reporte.getCitizen().getLastname() : null)

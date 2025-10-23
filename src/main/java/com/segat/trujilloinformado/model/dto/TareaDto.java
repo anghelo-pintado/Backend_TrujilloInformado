@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,14 +18,14 @@ import lombok.NoArgsConstructor;
 public class TareaDto {
     private Long id;
     private Long reportId;
+    private ReporteDto report;
     private Long workerId;
     private Long supervisorId;
-    private String title;
+    private String evidence;
     private String description;
-    private String notes;
     private Type type;
     private Location location;
     private Status status;
-    private Priority priority;
-    private String completedAt;
+    private Instant assignedAt;
+    private Instant completedAt;
 }

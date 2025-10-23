@@ -34,4 +34,6 @@ public class ReporteDto {
     private String assignedBy;
     private Instant createdAt;
     private Instant updatedAt;
+    private Instant assignedAt;
+    private Instant completedAt;
 }

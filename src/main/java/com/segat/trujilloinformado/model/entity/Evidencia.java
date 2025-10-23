@@ -20,8 +20,15 @@ public class Evidencia {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long taskId;
-    private Long uploadedBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "task_id")
+    private Tarea task;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uploaded_by")
+    private Usuario uploadedBy;
+
+    @Column(columnDefinition = "TEXT") // Almacenar URLs separadas por comas
     private String url;
 
     @CreationTimestamp

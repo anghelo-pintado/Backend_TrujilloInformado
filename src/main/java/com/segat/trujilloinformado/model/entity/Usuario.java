@@ -39,7 +39,9 @@ public class Usuario implements UserDetails {
     private String lastname;
     private String phone;
 
-    private String zone;
+    @JoinColumn(name = "zone_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Zona zone;
 
     private LocalDate birthDate;
 

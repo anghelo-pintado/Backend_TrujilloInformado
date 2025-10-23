@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import org.locationtech.jts.geom.Polygon;
 import java.time.Instant;
 
 @Entity
@@ -21,14 +22,11 @@ public class Zona {
 
     private String name;
 
-
-    @JoinColumn(name = "supervisor_id")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Usuario supervisor;
+    private Integer number;
 
     // jsonb field for boundaries
-    @Column(columnDefinition = "jsonb")
-    private String limites;
+    @Column(columnDefinition = "geometry(Polygon,4326)")
+    private Polygon boundaries;
 
     @CreationTimestamp
     private Instant createdAt;

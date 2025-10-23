@@ -11,6 +11,7 @@ public interface IReporteService {
     Reporte save(ReporteDto reporteDto);
     Reporte findById(Long id);
     Page<Reporte> findByCitizenEmail(String email, Pageable pageable);
+    Page<Reporte> findByZoneNumber(Integer number, Pageable pageable);
     void delete(Reporte reporte);
     boolean existsById(Long id);
     List<Reporte> findAll();

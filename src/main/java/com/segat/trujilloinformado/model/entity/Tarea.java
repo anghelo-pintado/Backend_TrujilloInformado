@@ -24,12 +24,16 @@ public class Tarea {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long reportId;
-    private Long workerId;
-    private String workerName;
-    private Long supervisorId;
-    private String supervisorName;
-    private String title;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reporte_id", nullable = false)
+    private Reporte report;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "worker_id")
+    private Usuario worker;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supervisor_id")
+    private Usuario supervisor;
+
     private String description;
     private String notes;
     private Type type;
@@ -38,13 +42,13 @@ public class Tarea {
     private double lng;
     private String address;
 
+    @Column(columnDefinition = "TEXT")
+    private String evidences;
+
     private Status status;
     private Priority priority;
 
-    @CreationTimestamp
     private Instant assignedAt;
-
-    private Instant startedAt;
     private Instant completedAt;
 
     @CreationTimestamp

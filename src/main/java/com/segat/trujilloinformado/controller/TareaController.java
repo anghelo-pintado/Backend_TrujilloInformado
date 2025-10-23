@@ -1,20 +1,28 @@
 package com.segat.trujilloinformado.controller;
 
-import com.segat.trujilloinformado.model.dto.ReporteDto;
 import com.segat.trujilloinformado.model.dto.TareaDto;
-import com.segat.trujilloinformado.model.entity.Reporte;
+import com.segat.trujilloinformado.model.dto.tarea.CompletarTareaRequest;
 import com.segat.trujilloinformado.model.entity.Tarea;
+import com.segat.trujilloinformado.model.entity.Usuario;
+import com.segat.trujilloinformado.model.entity.enums.Status;
 import com.segat.trujilloinformado.model.entity.interno.Location;
 import com.segat.trujilloinformado.model.payload.MessageResponse;
 import com.segat.trujilloinformado.service.ITareaService;
+import com.segat.trujilloinformado.service.IUsuarioService;
 import com.segat.trujilloinformado.service.impl.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -24,23 +32,29 @@ public class TareaController {
     private ITareaService tareaService;
 
     @Autowired
+    private IUsuarioService usuarioService;
+
+    @Autowired
     private CloudinaryService cloudinaryService;
 
     @PostMapping("tarea")
-    public ResponseEntity<?> create(@RequestBody TareaDto tareaDto) {
+    public ResponseEntity<?> create(@RequestBody TareaDto tareaDto, @AuthenticationPrincipal UserDetails userDetails) {
+        String supervisorEmail = userDetails.getUsername();
+        Usuario supervisor = usuarioService.findByEmail(supervisorEmail).orElseThrow(() -> new IllegalStateException("Supervisor not found"));
+
         Tarea tareaSave = null;
         try {
+            tareaDto.setSupervisorId(supervisor.getId());
+            tareaDto.setAssignedAt(Instant.now());
             tareaSave = tareaService.save(tareaDto);
             return new ResponseEntity<>(
                     MessageResponse.builder()
                             .objecto(TareaDto.builder()
                                     .id(tareaSave.getId())
-                                    .reportId(tareaSave.getReportId())
-                                    .workerId(tareaSave.getWorkerId())
-                                    .supervisorId(tareaSave.getSupervisorId())
-                                    .title(tareaSave.getTitle())
+                                    .reportId(tareaSave.getReport().getId())
+                                    .workerId(tareaSave.getWorker().getId())
+                                    .supervisorId(tareaSave.getSupervisor().getId())
                                     .description(tareaSave.getDescription())
-                                    .notes(tareaSave.getNotes())
                                     .type(tareaSave.getType())
                                     .location(Location.builder()
                                             .lat(tareaSave.getLat())
@@ -48,7 +62,6 @@ public class TareaController {
                                             .address(tareaSave.getAddress())
                                             .build())
                                     .status(tareaSave.getStatus())
-                                    .priority(tareaSave.getPriority())
                                     .build())
                             .build()
                     , HttpStatus.CREATED);
@@ -68,14 +81,15 @@ public class TareaController {
         try {
             if (tareaService.existsById(id)) {
                 tareaDto.setId(id);
+                tareaDto.setCompletedAt(Instant.now());
+                tareaDto.setStatus(Status.RESUELTO);
                 tareaUpdate = tareaService.save(tareaDto);
                 return new ResponseEntity<>(
                         MessageResponse.builder()
                                 .objecto(TareaDto.builder()
                                         .id(tareaUpdate.getId())
                                         .status(tareaUpdate.getStatus())
-                                        .completedAt(String.valueOf(tareaUpdate.getCompletedAt()))
-                                        .notes(tareaUpdate.getNotes())
+                                        .completedAt(tareaUpdate.getCompletedAt())
                                         .build())
                                 .build()
                         , HttpStatus.CREATED);
@@ -95,32 +109,64 @@ public class TareaController {
         }
     }
 
-    @GetMapping("/tareas")
-    public ResponseEntity<?> showAll() {
-        List<Tarea> tareas = tareaService.findAll();
-        List<TareaDto> dtos = tareas.stream().map(tarea ->
-                TareaDto.builder()
-                        .id(tarea.getId())
-                        .reportId(tarea.getReportId())
-                        .workerId(tarea.getWorkerId())
-                        .supervisorId(tarea.getSupervisorId())
-                        .title(tarea.getTitle())
-                        .description(tarea.getDescription())
-                        .notes(tarea.getNotes())
-                        .type(tarea.getType())
-                        .location(
-                                Location.builder()
-                                        .lat(tarea.getLat())
-                                        .lng(tarea.getLng())
-                                        .address(tarea.getAddress())
-                                        .build()
-                        )
-                        .status(tarea.getStatus())
-                        .priority(tarea.getPriority())
-                        .build()
-        ).toList();
+    @PatchMapping("tarea/{id}/completar")
+    public ResponseEntity<?> completarTarea(@PathVariable Long id, @RequestBody CompletarTareaRequest request) {
+        try {
+            // Llama a un nuevo método de servicio dedicado
+            TareaDto tareaActualizada = tareaService.completeTask(id, request.notes(), String.valueOf(request.evidences()));
+            return ResponseEntity.ok(tareaActualizada);
 
-        return ResponseEntity.ok(dtos);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(
+                    MessageResponse.builder().mensaje(e.getMessage()).build(),
+                    HttpStatus.NOT_FOUND);
+        } catch (DataAccessException e) {
+            return new ResponseEntity<>(
+                    MessageResponse.builder().mensaje("Error al actualizar la tarea: " + e.getMessage()).build(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+//    @GetMapping("/tareas")
+//    public ResponseEntity<?> showAll() {
+//        List<Tarea> tareas = tareaService.findAll();
+//        List<TareaDto> dtos = tareas.stream().map(tarea ->
+//                TareaDto.builder()
+//                        .id(tarea.getId())
+//                        .reportId(tarea.getReportId())
+//                        .workerId(tarea.getWorkerId())
+//                        .supervisorId(tarea.getSupervisorId())
+//                        .title(tarea.getTitle())
+//                        .description(tarea.getDescription())
+//                        .notes(tarea.getNotes())
+//                        .type(tarea.getType())
+//                        .location(
+//                                Location.builder()
+//                                        .lat(tarea.getLat())
+//                                        .lng(tarea.getLng())
+//                                        .address(tarea.getAddress())
+//                                        .build()
+//                        )
+//                        .status(tarea.getStatus())
+//                        .priority(tarea.getPriority())
+//                        .build()
+//        ).toList();
+//
+//        return ResponseEntity.ok(dtos);
+//    }
+//
+    @GetMapping("/tareas/me")
+    public ResponseEntity<Page<?>> getCurrentWorkerTask(
+            @AuthenticationPrincipal UserDetails userDetails, // Spring Security inyecta al usuario autenticado
+            Pageable pageable) { // Spring maneja automáticamente los parámetros ?page=0&size=10
+
+        String workerEmail = userDetails.getUsername(); // O el ID, según lo que guardes en el token
+        Page<TareaDto> tareas = tareaService.findByWorkerEmail(workerEmail, pageable);
+        List<TareaDto> filteredTareas = tareas.stream()
+                .filter(tarea -> tarea.getStatus() != Status.RESUELTO)
+                .toList();
+        Page<TareaDto> resultPage = new PageImpl<>(filteredTareas, tareas.getPageable(), filteredTareas.size());
+        return ResponseEntity.ok(resultPage);
     }
 
     @PostMapping("/tarea/cargar")

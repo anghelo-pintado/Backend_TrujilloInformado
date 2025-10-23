@@ -2,13 +2,17 @@ package com.segat.trujilloinformado.service;
 
 import com.segat.trujilloinformado.model.dto.TareaDto;
 import com.segat.trujilloinformado.model.entity.Tarea;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface ITareaService {
     Tarea save(TareaDto tareaDto);
+    TareaDto completeTask(Long tareaId, String notes, String evidences);
     Tarea findById(Long id);
     void delete(Tarea tarea);
     boolean existsById(Long id);
     List<Tarea> findAll();
+    Page<TareaDto> findByWorkerEmail(String workerEmail, Pageable pageable);
 }

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsuarioServiceImpl implements IUsuarioService {
@@ -43,10 +44,21 @@ public class UsuarioServiceImpl implements IUsuarioService {
         return usuarioDao.findAll();
     }
 
+    @Override
+    public List<Usuario> findTrabajadoresByZoneNumber(Integer number) {
+        return usuarioDao.findTrabajadoresByZoneNumber(number);
+    }
+
     @Transactional(readOnly = true)
     @Override
-    public Usuario findByEmail(String email) {
-        return usuarioDao.findByEmail(email).orElse(null);
+    public Optional<Usuario> findByEmail(String email) {
+        return usuarioDao.findByEmail(email);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Usuario> findByEmailWithZone(String email) {
+        return usuarioDao.findByEmailWithZone(email);
     }
 
     @Override

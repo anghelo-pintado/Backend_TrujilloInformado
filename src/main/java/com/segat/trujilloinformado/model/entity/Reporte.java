@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.locationtech.jts.geom.Point;
 
 import java.time.Instant;
 
@@ -30,30 +31,42 @@ public class Reporte {
 
     @Column(nullable = false)
     private Type type;
+
     private String description;
 
     private double lat;
     private double lng;
     private String address;
 
+    @Column(columnDefinition = "geometry(Point,4326)")
+    private Point point;
+
     @Column(columnDefinition = "TEXT") // Almacenar URLs separadas por comas
     private String photos;
 
     private Status status;
-
     private Priority priority;
-    private String zone;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "zone_id")
+    private Zona zone;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_to")
+    private Usuario assignedTo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_by")
+    private Usuario assignedBy;
+
+    private Instant assignedAt;
+    private Instant completedAt;
 
     @CreationTimestamp
     private Instant createdAt;
+
     @UpdateTimestamp
     private Instant updatedAt;
-
-    private String assignedTo;
-    private String assignedBy;
-
-    @UpdateTimestamp
-    private Instant assignedAt;
 }
 
 

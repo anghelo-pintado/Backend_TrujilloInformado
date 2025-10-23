@@ -13,4 +13,6 @@ public interface ReporteDao extends JpaRepository<Reporte, Long> {
      * "SELECT r FROM Report r WHERE r.citizen.email = :email"
      */
     Page<Reporte> findByCitizenEmail(String email, Pageable pageable);
+
+    Page<Reporte> findByZoneNumber(Integer number, Pageable pageable);
 }

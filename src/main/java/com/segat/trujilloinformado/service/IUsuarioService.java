@@ -2,6 +2,7 @@ package com.segat.trujilloinformado.service;
 
 import com.segat.trujilloinformado.model.dto.authentication.RegisterRequest;
 import com.segat.trujilloinformado.model.entity.Usuario;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +11,9 @@ public interface IUsuarioService {
     Usuario save(RegisterRequest registerRequest);
     Usuario findById(Long id);
     List<Usuario> findAll();
-    Usuario findByEmail(String email);
+    List<Usuario> findTrabajadoresByZoneNumber(Integer number);
+    Optional<Usuario> findByEmail(String email);
+    Optional<Usuario> findByEmailWithZone(String email);
     Boolean existsByEmail(String email);
     void deleteById(Long id);
 }
