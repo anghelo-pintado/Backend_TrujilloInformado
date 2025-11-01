@@ -4,8 +4,9 @@ import com.segat.trujilloinformado.model.entity.Reporte;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface ReporteDao extends JpaRepository<Reporte, Long> {
+public interface ReporteDao extends JpaRepository<Reporte, Long>, JpaSpecificationExecutor<Reporte> {
     /**
      * Busca y pagina todos los reportes que pertenecen a un ciudadano,
      * identificado por su email.

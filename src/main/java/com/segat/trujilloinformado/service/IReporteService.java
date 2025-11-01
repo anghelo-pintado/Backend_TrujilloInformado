@@ -1,10 +1,14 @@
 package com.segat.trujilloinformado.service;
 
 import com.segat.trujilloinformado.model.dto.ReporteDto;
+import com.segat.trujilloinformado.model.dto.reporte.IndicadoresDto;
 import com.segat.trujilloinformado.model.entity.Reporte;
+import com.segat.trujilloinformado.model.entity.enums.Status;
+import com.segat.trujilloinformado.model.entity.enums.Type;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface IReporteService {
@@ -12,6 +16,25 @@ public interface IReporteService {
     Reporte findById(Long id);
     Page<Reporte> findByCitizenEmail(String email, Pageable pageable);
     Page<Reporte> findByZoneNumber(Integer number, Pageable pageable);
+    Page<Reporte> findSupervisorReportsWithFilters(
+            Integer zoneNumber,
+            List<Status> statuses, // Plural y tipo Lista
+            List<Type> types,       // Plural y tipo Lista
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable);
+    List<Reporte> findAllSupervisorReportsWithFilters(
+            Integer zoneNumber,
+            List<Status> statuses,
+            List<Type> types,
+            LocalDate startDate,
+            LocalDate endDate);
+    IndicadoresDto calculateIndicators(
+            Integer zoneNumber,
+            List<Status> statuses,
+            List<Type> types,
+            LocalDate startDate,
+            LocalDate endDate);
     void delete(Reporte reporte);
     boolean existsById(Long id);
     List<Reporte> findAll();

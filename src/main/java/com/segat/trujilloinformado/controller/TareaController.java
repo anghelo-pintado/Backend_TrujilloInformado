@@ -113,7 +113,7 @@ public class TareaController {
     public ResponseEntity<?> completarTarea(@PathVariable Long id, @RequestBody CompletarTareaRequest request) {
         try {
             // Llama a un nuevo método de servicio dedicado
-            TareaDto tareaActualizada = tareaService.completeTask(id, request.notes(), String.valueOf(request.evidences()));
+            TareaDto tareaActualizada = tareaService.completeTask(id, request.notes(), request.evidences());
             return ResponseEntity.ok(tareaActualizada);
 
         } catch (IllegalStateException e) {

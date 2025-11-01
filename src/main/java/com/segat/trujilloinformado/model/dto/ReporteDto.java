@@ -23,6 +23,7 @@ public class ReporteDto {
     private String description;
     private Location location;
     private List<String> photos; // aquí guardaremos URLs de Cloudinary
+    private List<String> evidence; // aquí guardaremos URLs de Cloudinary
     private Priority priority;
     private String zone;
     private Status status;

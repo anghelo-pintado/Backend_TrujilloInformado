@@ -44,6 +44,9 @@ public class Reporte {
     @Column(columnDefinition = "TEXT") // Almacenar URLs separadas por comas
     private String photos;
 
+    @Column(columnDefinition = "TEXT")
+    private String evidence;
+
     private Status status;
     private Priority priority;
 

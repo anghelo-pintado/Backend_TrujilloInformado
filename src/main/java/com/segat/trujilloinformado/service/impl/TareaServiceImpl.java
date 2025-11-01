@@ -66,14 +66,19 @@ public class TareaServiceImpl implements ITareaService {
     }
 
     @Override
-    public TareaDto completeTask(Long tareaId, String notes, String evidences) {
+    public TareaDto completeTask(Long tareaId, String notes, List<String> evidences) {
         // 1. Busca la tarea existente
         Tarea tarea = tareaDao.findById(tareaId)
                 .orElseThrow(() -> new IllegalStateException("La tarea con ID " + tareaId + " no existe."));
 
+        // Ahora `String.join` funciona perfectamente porque `evidences` es una lista
+        String evidenceAsString = (evidences != null && !evidences.isEmpty())
+                ? String.join(",", evidences)
+                : null;
+
         // 2. Modifica solo los campos necesarios
         tarea.setStatus(Status.RESUELTO);
-        tarea.setEvidences(evidences);
+        tarea.setEvidences(evidenceAsString);
         tarea.setCompletedAt(Instant.now());
         tarea.setNotes(notes);
         // Aquí puedes agregar la lógica para guardar la URL de la foto si es necesario
@@ -82,6 +87,7 @@ public class TareaServiceImpl implements ITareaService {
         // 3. Actualiza el reporte asociado
         Reporte reporte = tarea.getReport();
         reporte.setStatus(Status.RESUELTO);
+        reporte.setEvidence(evidenceAsString);
         reporte.setCompletedAt(Instant.now());
 
         // 4. Guarda las entidades actualizadas (JPA lo hará al final de la transacción, pero explícito es más claro)

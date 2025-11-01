@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ITareaService {
     Tarea save(TareaDto tareaDto);
-    TareaDto completeTask(Long tareaId, String notes, String evidences);
+    TareaDto completeTask(Long tareaId, String notes, List<String> evidences);
     Tarea findById(Long id);
     void delete(Tarea tarea);
     boolean existsById(Long id);

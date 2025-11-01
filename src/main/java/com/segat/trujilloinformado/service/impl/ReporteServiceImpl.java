@@ -2,10 +2,13 @@ package com.segat.trujilloinformado.service.impl;
 
 import com.segat.trujilloinformado.model.dao.ReporteDao;
 import com.segat.trujilloinformado.model.dto.ReporteDto;
+import com.segat.trujilloinformado.model.dto.reporte.IndicadoresDto;
+import com.segat.trujilloinformado.model.dto.reporte.ReporteSpecification;
 import com.segat.trujilloinformado.model.entity.Reporte;
 import com.segat.trujilloinformado.model.entity.Usuario;
 import com.segat.trujilloinformado.model.entity.Zona;
 import com.segat.trujilloinformado.model.entity.enums.Status;
+import com.segat.trujilloinformado.model.entity.enums.Type;
 import com.segat.trujilloinformado.service.IReporteService;
 import com.segat.trujilloinformado.service.IUsuarioService;
 import com.segat.trujilloinformado.service.IZonaService;
@@ -13,10 +16,15 @@ import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -90,6 +98,64 @@ public class ReporteServiceImpl implements IReporteService {
     public Page<Reporte> findByZoneNumber(Integer number, Pageable pageable) {
         return reporteDao.findByZoneNumber(number, pageable);
     }
+
+    /**
+     * Busca reportes para un supervisor aplicando filtros dinámicos.
+     * La lógica de negocio principal está encapsulada en ReporteSpecification.
+     */
+    @Override
+    public Page<Reporte> findSupervisorReportsWithFilters(Integer zoneNumber, List<Status> statuses, List<Type> types, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        Specification<Reporte> spec = ReporteSpecification.withFilters(
+                zoneNumber, statuses, types, startDate, endDate
+        );
+
+        // El método findAll viene de JpaSpecificationExecutor
+        return reporteDao.findAll(spec, pageable);
+    }
+
+    @Override
+    public List<Reporte> findAllSupervisorReportsWithFilters(Integer zoneNumber, List<Status> statuses, List<Type> types, LocalDate startDate, LocalDate endDate) {
+        Specification<Reporte> spec = ReporteSpecification.withFilters(
+                zoneNumber, statuses, types, startDate, endDate
+        );
+
+        // Usamos findAll con un Sort, pero sin Pageable para traer todos los resultados
+        return reporteDao.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
+    }
+
+    @Override
+    public IndicadoresDto calculateIndicators(Integer zoneNumber, List<Status> statuses, List<Type> types, LocalDate startDate, LocalDate endDate) {
+        // Especificación base (incluye zona, fechas, tipos y estados seleccionados)
+        Specification<Reporte> baseSpec = ReporteSpecification.withFilters(
+                zoneNumber, statuses, types, startDate, endDate
+        );
+
+        // 1. Calcular el total de reportes que coinciden con los filtros
+        long totalCount = reporteDao.count(baseSpec);
+
+        // 2. Calcular total de pendientes (añadiendo la condición PENDIENTE a la base)
+        Specification<Reporte> pendingSpec = baseSpec.and((root, query, cb) -> cb.equal(root.get("status"), Status.PENDIENTE));
+        long pendingCount = reporteDao.count(pendingSpec);
+
+        // 3. Calcular total de resueltos
+        Specification<Reporte> resolvedSpec = baseSpec.and((root, query, cb) -> cb.equal(root.get("status"), Status.RESUELTO));
+        long resolvedCount = reporteDao.count(resolvedSpec);
+
+        // 4. Calcular totales por tipo (BARRIDO, MALEZA, etc.)
+        Map<String, Long> byType = new HashMap<>();
+        for (Type typeEnum : Type.values()) {
+            Specification<Reporte> typeSpec = baseSpec.and((root, query, cb) -> cb.equal(root.get("type"), typeEnum));
+            byType.put(typeEnum.name(), reporteDao.count(typeSpec));
+        }
+
+        return IndicadoresDto.builder()
+                .total(totalCount)
+                .pending(pendingCount)
+                .resolved(resolvedCount)
+                .byType(byType)
+                .build();
+    }
+
 
     @Override
     public void delete(Reporte reporte) {

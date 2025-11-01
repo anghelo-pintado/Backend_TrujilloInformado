@@ -1,20 +1,28 @@
 package com.segat.trujilloinformado.controller;
 
 import com.segat.trujilloinformado.model.dto.ReporteDto;
+import com.segat.trujilloinformado.model.dto.reporte.IndicadoresDto;
 import com.segat.trujilloinformado.model.entity.Reporte;
 import com.segat.trujilloinformado.model.entity.Usuario;
+import com.segat.trujilloinformado.model.entity.enums.Status;
+import com.segat.trujilloinformado.model.entity.enums.Type;
 import com.segat.trujilloinformado.model.entity.interno.Location;
 import com.segat.trujilloinformado.model.payload.MessageResponse;
+import com.segat.trujilloinformado.service.IPdfService;
 import com.segat.trujilloinformado.service.IReporteService;
 import com.segat.trujilloinformado.service.IUsuarioService;
 import com.segat.trujilloinformado.service.impl.CloudinaryService;
 import org.apache.catalina.LifecycleState;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,6 +43,9 @@ public class ReporteController {
 
     @Autowired
     private IUsuarioService usuarioService;
+
+    @Autowired
+    private IPdfService pdfService;
 
     @Autowired
     private CloudinaryService cloudinaryService;
@@ -189,6 +202,27 @@ public class ReporteController {
         return getPageResponseEntity(reportes);
     }
 
+    @GetMapping("/reportes/supervisor/summary") // Nuevo endpoint
+    public ResponseEntity<?> getZoneReportsSummary(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) List<Status> estados,
+            @RequestParam(required = false) List<Type> tipos,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+
+        String supervisorEmail = userDetails.getUsername();
+        Usuario supervisor = usuarioService.findByEmailWithZone(supervisorEmail)
+                .orElseThrow(() -> new IllegalStateException("Supervisor not found"));
+
+        Integer zoneNumber = supervisor.getZone().getNumber();
+
+        IndicadoresDto indicadores = reporteService.calculateIndicators(
+                zoneNumber, estados, tipos, fechaInicio, fechaFin
+        );
+
+        return ResponseEntity.ok(indicadores);
+    }
+
     @GetMapping("/reportes/me")
     public ResponseEntity<Page<?>> getCurrentUserReports(
             @AuthenticationPrincipal UserDetails userDetails, // Spring Security inyecta al usuario autenticado
@@ -202,19 +236,23 @@ public class ReporteController {
     @GetMapping("/reportes/supervisor/me")
     public ResponseEntity<Page<?>> getZoneReports(
             @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) List<Status> estados, // Plural y tipo Lista
+            @RequestParam(required = false) List<Type> tipos,       // Plural y tipo Lista
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
             Pageable pageable) {
 
         String supervisorEmail = userDetails.getUsername();
         Usuario supervisor = usuarioService.findByEmailWithZone(supervisorEmail)
                 .orElseThrow(() -> new IllegalStateException("Supervisor not found"));
 
-        Integer zoneNumber = supervisor.getZone().getNumber(); // now initialized
-        Page<Reporte> reportes = reporteService.findByZoneNumber(zoneNumber, pageable);
-        List<Reporte> filteredReportes = reportes.stream()
-                .filter(reporte -> reporte.getAssignedTo() == null)
-                .toList();
-        Page<Reporte> filteredPage = new PageImpl<>(filteredReportes, reportes.getPageable(), filteredReportes.size());
-        return getPageResponseEntity(filteredPage);
+        Integer zoneNumber = supervisor.getZone().getNumber();
+
+        // 🚀 LLAMADA AL NUEVO MÉTODO DEL SERVICIO
+        Page<Reporte> reportes = reporteService.findSupervisorReportsWithFilters(
+                zoneNumber, estados, tipos, fechaInicio, fechaFin, pageable
+        );
+        return getPageResponseEntity(reportes);
     }
 
     private ResponseEntity<Page<?>> getPageResponseEntity(Page<Reporte> reportes) {
@@ -228,6 +266,7 @@ public class ReporteController {
                         .address(reporte.getAddress())
                         .build())
                 .photos(Arrays.asList(reporte.getPhotos() != null ? reporte.getPhotos().split(",") : new String[0]))
+                .evidence(Arrays.asList(reporte.getEvidence() != null ? reporte.getEvidence().split(",") : new String[0]))
                 .priority(reporte.getPriority())
                 .zone(reporte.getZone().getName())
                 .status(reporte.getStatus())
@@ -235,10 +274,43 @@ public class ReporteController {
                 .citizenName(reporte.getCitizen() != null ? reporte.getCitizen().getFirstname() + " " + reporte.getCitizen().getLastname() : null)
                 .citizenPhone(reporte.getCitizen() != null ? reporte.getCitizen().getPhone() : null)
                 .citizenEmail(reporte.getCitizen() != null ? reporte.getCitizen().getEmail() : null)
+                .assignedTo(reporte.getAssignedTo() != null ? reporte.getAssignedTo().getFirstname() + " " + reporte.getAssignedTo().getLastname() : null)
                 .createdAt(reporte.getCreatedAt())
                 .updatedAt(reporte.getUpdatedAt())
                 .build());
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/reportes/supervisor/export/pdf")
+    public ResponseEntity<?> exportReportsToPdf(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) List<Status> estados,
+            @RequestParam(required = false) List<Type> tipos,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+
+        String supervisorEmail = userDetails.getUsername();
+        Usuario supervisor = usuarioService.findByEmailWithZone(supervisorEmail)
+                .orElseThrow(() -> new IllegalStateException("Supervisor not found"));
+        Integer zoneNumber = supervisor.getZone().getNumber();
+
+        // 1. Obtener la lista COMPLETA de reportes con filtros
+        List<Reporte> reportes = reporteService.findAllSupervisorReportsWithFilters(
+                zoneNumber, estados, tipos, fechaInicio, fechaFin
+        );
+
+        // 2. Generar el PDF
+        ByteArrayInputStream pdfInputStream = pdfService.generateReportsPdf(reportes);
+
+        // 3. Configurar las cabeceras HTTP para la descarga
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "inline; filename=historial_reportes.pdf");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(pdfInputStream));
     }
 
     @PostMapping("/reporte/cargar")
