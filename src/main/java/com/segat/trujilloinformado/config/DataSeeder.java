@@ -87,7 +87,7 @@ public class DataSeeder {
                             .zone(zonaDao.findByNumber(i).orElseThrow())
                             .firstname("Supervisor")
                             .lastname("Zona " + i)
-                            .phone("987654321")
+                            .phone("964144695")
                             .birthDate(LocalDate.of(1990, 1, 1))
                             .build());
                 }
@@ -100,7 +100,7 @@ public class DataSeeder {
                         .zone(zonaDao.findByNumber(6).orElseThrow())
                         .firstname("Supervisor")
                         .lastname("Zona 6 Mañana")
-                        .phone("987654321")
+                        .phone("964144695")
                         .birthDate(LocalDate.of(1990, 1, 1))
                         .build());
             }
@@ -112,7 +112,7 @@ public class DataSeeder {
                         .zone(zonaDao.findByNumber(6).orElseThrow())
                         .firstname("Supervisor")
                         .lastname("Zona 6 Tarde")
-                        .phone("987654321")
+                        .phone("964144695")
                         .birthDate(LocalDate.of(1990, 1, 1))
                         .build());
             }
@@ -124,7 +124,7 @@ public class DataSeeder {
                         .firstname("Supervisor")
                         .zone(zonaDao.findByNumber(6).orElseThrow())
                         .lastname("Zona 6 Noche")
-                        .phone("987654321")
+                        .phone("964144695")
                         .birthDate(LocalDate.of(1990, 1, 1))
                         .build());
             }
@@ -139,7 +139,7 @@ public class DataSeeder {
                                 .zone(zonaDao.findByNumber(i + 1).orElseThrow())
                                 .firstname("Colaborador")
                                 .lastname("Zona " + (i + 1) + " - " + (j + 1))
-                                .phone("987654321")
+                                .phone("964144695")
                                 .birthDate(LocalDate.of(1995, 1, 1))
                                 .build());
                     }
@@ -160,7 +160,7 @@ public class DataSeeder {
                                 .zone(zonaDao.findByNumber(6).orElseThrow())
                                 .firstname("Colaborador Zona 6")
                                 .lastname(turnos.get(j) + " - " + k)
-                                .phone("987654321")
+                                .phone("964144695")
                                 .birthDate(LocalDate.of(1995, 1, 1))
                                 .build());
                     }

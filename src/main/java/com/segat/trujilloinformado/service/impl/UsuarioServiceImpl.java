@@ -49,6 +49,11 @@ public class UsuarioServiceImpl implements IUsuarioService {
         return usuarioDao.findTrabajadoresByZoneNumber(number);
     }
 
+    @Override
+    public Optional<Usuario> findByZoneNumber(Integer number) {
+        return usuarioDao.findByZone_NumberAndRole(number, Role.SUPERVISOR);
+    }
+
     @Transactional(readOnly = true)
     @Override
     public Optional<Usuario> findByEmail(String email) {

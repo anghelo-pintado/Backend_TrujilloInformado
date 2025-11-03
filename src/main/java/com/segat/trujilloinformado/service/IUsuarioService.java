@@ -12,6 +12,7 @@ public interface IUsuarioService {
     Usuario findById(Long id);
     List<Usuario> findAll();
     List<Usuario> findTrabajadoresByZoneNumber(Integer number);
+    Optional<Usuario> findByZoneNumber(Integer number);
     Optional<Usuario> findByEmail(String email);
     Optional<Usuario> findByEmailWithZone(String email);
     Boolean existsByEmail(String email);

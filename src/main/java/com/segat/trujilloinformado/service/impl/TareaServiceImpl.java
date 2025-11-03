@@ -11,6 +11,7 @@ import com.segat.trujilloinformado.model.entity.Tarea;
 import com.segat.trujilloinformado.model.entity.Usuario;
 import com.segat.trujilloinformado.model.entity.enums.Status;
 import com.segat.trujilloinformado.model.entity.interno.Location;
+import com.segat.trujilloinformado.service.INotificationService;
 import com.segat.trujilloinformado.service.ITareaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,9 @@ public class TareaServiceImpl implements ITareaService {
 
     @Autowired
     private ReporteDao reporteDao;
+
+    @Autowired
+    private INotificationService notificationService;
 
     @Transactional
     @Override
@@ -62,7 +66,18 @@ public class TareaServiceImpl implements ITareaService {
                 .assignedAt(tareaDto.getAssignedAt())
                 .completedAt(tareaDto.getCompletedAt())
                 .build();
-        return tareaDao.save(tarea);
+
+        Tarea tareaGuardada = tareaDao.save(tarea);
+
+        try {
+            // Llamar al nuevo método asíncrono
+            notificationService.sendNewTaskNotification(tareaGuardada);
+        } catch (Exception e) {
+            // No bloquear la respuesta al supervisor por un error de notificación
+            // log.error("No se pudo encolar la notificación para la tarea {}", tareaGuardada.getId(), e);
+        }
+
+        return tareaGuardada;
     }
 
     @Override

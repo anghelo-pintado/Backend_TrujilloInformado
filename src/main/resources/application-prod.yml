@@ -35,3 +35,8 @@ cloudinary:
     api-key: ${CLOUDINARY_API_KEY}
     api-secret: ${CLOUDINARY_API_SECRET}
 
+n8n:
+    webhook:
+      new-report: ${N8N_NEW_REPORT}
+      new-task: ${N8N_NEW_TASK}
+

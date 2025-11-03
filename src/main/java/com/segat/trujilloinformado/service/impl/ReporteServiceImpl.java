@@ -9,6 +9,7 @@ import com.segat.trujilloinformado.model.entity.Usuario;
 import com.segat.trujilloinformado.model.entity.Zona;
 import com.segat.trujilloinformado.model.entity.enums.Status;
 import com.segat.trujilloinformado.model.entity.enums.Type;
+import com.segat.trujilloinformado.service.INotificationService;
 import com.segat.trujilloinformado.service.IReporteService;
 import com.segat.trujilloinformado.service.IUsuarioService;
 import com.segat.trujilloinformado.service.IZonaService;
@@ -37,6 +38,9 @@ public class ReporteServiceImpl implements IReporteService {
 
     @Autowired
     private IZonaService zonaService;
+
+    @Autowired
+    private INotificationService notificationService;
 
     @Transactional
     @Override
@@ -79,7 +83,19 @@ public class ReporteServiceImpl implements IReporteService {
                 .completedAt(dto.getCompletedAt())
                 .build();
 
-        return reporteDao.save(reporte);
+        Reporte reporteGuardado = reporteDao.save(reporte);
+
+        try {
+            notificationService.sendNewReportNotification(reporteGuardado);
+        }
+        catch (Exception e) {
+            // No relanzar la excepción. La creación del reporte fue exitosa.
+            // El servicio de notificación ya maneja sus propios errores.
+            // Simplemente loguear que la tarea de notificación no se pudo encolar.
+            // log.error("No se pudo encolar la notificación para el reporte {}", reporteGuardado.getId(), e);
+        }
+
+        return reporteGuardado;
     }
 
     @Transactional(readOnly = true)
