@@ -1,6 +1,7 @@
 package com.segat.trujilloinformado.service;
 
 import com.segat.trujilloinformado.model.dto.authentication.RegisterRequest;
+import com.segat.trujilloinformado.model.dto.usuario.UpdateProfileRequest;
 import com.segat.trujilloinformado.model.entity.Usuario;
 import org.springframework.data.repository.query.Param;
 
@@ -15,6 +16,7 @@ public interface IUsuarioService {
     Optional<Usuario> findByZoneNumber(Integer number);
     Optional<Usuario> findByEmail(String email);
     Optional<Usuario> findByEmailWithZone(String email);
+    Usuario updateProfile(String email, UpdateProfileRequest request);
     Boolean existsByEmail(String email);
     void deleteById(Long id);
 }

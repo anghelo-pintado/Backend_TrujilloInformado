@@ -2,10 +2,12 @@ package com.segat.trujilloinformado.service.impl;
 
 import com.segat.trujilloinformado.model.dao.UsuarioDao;
 import com.segat.trujilloinformado.model.dto.authentication.RegisterRequest;
+import com.segat.trujilloinformado.model.dto.usuario.UpdateProfileRequest;
 import com.segat.trujilloinformado.model.entity.Usuario;
 import com.segat.trujilloinformado.model.entity.enums.Role;
 import com.segat.trujilloinformado.service.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,9 @@ import java.util.Optional;
 public class UsuarioServiceImpl implements IUsuarioService {
     @Autowired
     private UsuarioDao usuarioDao;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override
@@ -67,6 +72,40 @@ public class UsuarioServiceImpl implements IUsuarioService {
     }
 
     @Override
+    public Usuario updateProfile(String email, UpdateProfileRequest request) {
+        Usuario usuario = usuarioDao.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        boolean hasChanges = false;
+
+        // Actualizar teléfono si se proporciona
+        if (request.getPhone() != null && !request.getPhone().trim().isEmpty()) {
+            // Validar formato de teléfono (opcional)
+            if (!request.getPhone().matches("\\d{9}")) {
+                throw new IllegalArgumentException("El teléfono debe tener 9 dígitos");
+            }
+            usuario.setPhone(request.getPhone());
+            hasChanges = true;
+        }
+
+        // Actualizar contraseña si se proporciona
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            // Validar contraseña (opcional pero recomendado)
+            validatePassword(request.getPassword());
+
+            // Encriptar la nueva contraseña
+            usuario.setPassword(passwordEncoder.encode(request.getPassword()));
+            hasChanges = true;
+        }
+
+        if (!hasChanges) {
+            throw new IllegalArgumentException("Debe proporcionar al menos un campo para actualizar");
+        }
+
+        return usuarioDao.save(usuario);
+    }
+
+    @Override
     public Boolean existsByEmail(String email) {
         return usuarioDao.existsByEmail(email);
     }
@@ -74,5 +113,21 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     public void deleteById(Long id) {
         usuarioDao.deleteById(id);
+    }
+
+    // Método auxiliar para validar contraseña
+    private void validatePassword(String password) {
+        if (password.length() < 8) {
+            throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres");
+        }
+        if (!password.matches(".*[A-Z].*")) {
+            throw new IllegalArgumentException("La contraseña debe contener al menos una mayúscula");
+        }
+        if (!password.matches(".*\\d.*")) {
+            throw new IllegalArgumentException("La contraseña debe contener al menos un número");
+        }
+        if (password.matches(".*[^a-zA-Z0-9].*")) {
+            throw new IllegalArgumentException("La contraseña no debe contener caracteres especiales");
+        }
     }
 }
