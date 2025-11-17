@@ -136,11 +136,15 @@ public class TareaServiceImpl implements ITareaService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<TareaDto> findByWorkerEmail(String workerEmail, Pageable pageable) {
-        Page<Tarea> tareasPage = tareaDao.findByWorkerEmail(workerEmail, pageable);
-
-        // Usamos el método .map() de la página para convertir cada Tarea a TareaDto
-        return tareasPage.map(this::convertToDto);
+    public Page<TareaDto> findByWorkerEmail(String workerEmail, Status estado, Pageable pageable) {
+        if (estado != null) {
+            Page<Tarea> tareasPage = tareaDao.findByWorkerEmailAndStatus(workerEmail, estado, pageable);
+            return tareasPage.map(this::convertToDto);
+        }
+        else {
+            Page<Tarea> tareasPage = tareaDao.findByWorkerEmail(workerEmail, pageable);
+            return tareasPage.map(this::convertToDto);
+        }
     }
 
     // Método privado para encapsular la lógica de conversión
@@ -165,6 +169,7 @@ public class TareaServiceImpl implements ITareaService {
                 .description(tarea.getDescription())
                 .report(reporteInfo)
                 .assignedAt(tarea.getAssignedAt())
+                .completedAt(tarea.getCompletedAt())
                 .build();
     }
 }

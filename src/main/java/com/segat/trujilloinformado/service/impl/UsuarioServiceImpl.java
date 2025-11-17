@@ -77,6 +77,28 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
         boolean hasChanges = false;
+        Role userRole = usuario.getRole();
+
+        // ============================================
+        // ACTUALIZAR NOMBRE Y FUNCION (solo TRABAJADOR)
+        // ============================================
+
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            if (userRole != Role.TRABAJADOR) {
+                throw new IllegalArgumentException("Solo los trabajadores pueden actualizar su nombre");
+            }
+            usuario.setFirstname(request.getName());
+            hasChanges = true;
+        }
+
+        // Actualizar apellido y función (solo TRABAJADOR)
+        if (request.getLastname() != null && !request.getLastname().trim().isEmpty()) {
+            if (userRole != Role.TRABAJADOR) {
+                throw new IllegalArgumentException("Solo los trabajadores pueden actualizar su apellido");
+            }
+            usuario.setLastname(request.getLastname());
+            hasChanges = true;
+        }
 
         // Actualizar teléfono si se proporciona
         if (request.getPhone() != null && !request.getPhone().trim().isEmpty()) {

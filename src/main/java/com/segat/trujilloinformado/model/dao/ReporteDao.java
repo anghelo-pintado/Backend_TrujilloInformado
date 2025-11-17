@@ -1,6 +1,7 @@
 package com.segat.trujilloinformado.model.dao;
 
 import com.segat.trujilloinformado.model.entity.Reporte;
+import com.segat.trujilloinformado.model.entity.enums.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,6 @@ public interface ReporteDao extends JpaRepository<Reporte, Long>, JpaSpecificati
      * "SELECT r FROM Report r WHERE r.citizen.email = :email"
      */
     Page<Reporte> findByCitizenEmail(String email, Pageable pageable);
-
+    Page<Reporte> findByCitizenEmailAndStatus(String email, Status estado, Pageable pageable);
     Page<Reporte> findByZoneNumber(Integer number, Pageable pageable);
 }

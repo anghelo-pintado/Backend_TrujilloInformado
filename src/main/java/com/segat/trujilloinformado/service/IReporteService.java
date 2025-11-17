@@ -14,7 +14,7 @@ import java.util.List;
 public interface IReporteService {
     Reporte save(ReporteDto reporteDto);
     Reporte findById(Long id);
-    Page<Reporte> findByCitizenEmail(String email, Pageable pageable);
+    Page<Reporte> findByCitizenEmail(String email, Status estado, Pageable pageable);
     Page<Reporte> findByZoneNumber(Integer number, Pageable pageable);
     Page<Reporte> findSupervisorReportsWithFilters(
             Integer zoneNumber,

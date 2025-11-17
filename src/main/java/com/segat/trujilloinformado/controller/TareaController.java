@@ -158,15 +158,13 @@ public class TareaController {
     @GetMapping("/tareas/me")
     public ResponseEntity<Page<?>> getCurrentWorkerTask(
             @AuthenticationPrincipal UserDetails userDetails, // Spring Security inyecta al usuario autenticado
+            @RequestParam(required = false) Status estado,
             Pageable pageable) { // Spring maneja automáticamente los parámetros ?page=0&size=10
 
         String workerEmail = userDetails.getUsername(); // O el ID, según lo que guardes en el token
-        Page<TareaDto> tareas = tareaService.findByWorkerEmail(workerEmail, pageable);
-        List<TareaDto> filteredTareas = tareas.stream()
-                .filter(tarea -> tarea.getStatus() != Status.RESUELTO)
-                .toList();
-        Page<TareaDto> resultPage = new PageImpl<>(filteredTareas, tareas.getPageable(), filteredTareas.size());
-        return ResponseEntity.ok(resultPage);
+        Page<TareaDto> tareas = tareaService.findByWorkerEmail(workerEmail, estado, pageable);
+
+        return ResponseEntity.ok(tareas);
     }
 
     @PostMapping("/tarea/cargar")

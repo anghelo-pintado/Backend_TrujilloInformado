@@ -226,10 +226,11 @@ public class ReporteController {
     @GetMapping("/reportes/me")
     public ResponseEntity<Page<?>> getCurrentUserReports(
             @AuthenticationPrincipal UserDetails userDetails, // Spring Security inyecta al usuario autenticado
+            @RequestParam(required = false) Status estado,
             Pageable pageable) { // Spring maneja automáticamente los parámetros ?page=0&size=10
 
         String citizenEmail = userDetails.getUsername(); // O el ID, según lo que guardes en el token
-        Page<Reporte> reportes = reporteService.findByCitizenEmail(citizenEmail, pageable);
+        Page<Reporte> reportes = reporteService.findByCitizenEmail(citizenEmail, estado, pageable);
         return getPageResponseEntity(reportes);
     }
 

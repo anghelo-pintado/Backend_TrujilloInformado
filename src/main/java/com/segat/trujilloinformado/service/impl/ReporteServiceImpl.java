@@ -105,8 +105,14 @@ public class ReporteServiceImpl implements IReporteService {
     }
 
     @Override
-    public Page<Reporte> findByCitizenEmail(String email, Pageable pageable) {
-        return reporteDao.findByCitizenEmail(email, pageable);
+    public Page<Reporte> findByCitizenEmail(String email, Status estado, Pageable pageable) {
+
+        if (estado != null) {
+            return reporteDao.findByCitizenEmailAndStatus(email, estado, pageable);
+        }
+        else {
+            return reporteDao.findByCitizenEmail(email, pageable);
+        }
     }
 
     @Override

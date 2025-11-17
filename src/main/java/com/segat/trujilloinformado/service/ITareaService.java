@@ -2,6 +2,7 @@ package com.segat.trujilloinformado.service;
 
 import com.segat.trujilloinformado.model.dto.TareaDto;
 import com.segat.trujilloinformado.model.entity.Tarea;
+import com.segat.trujilloinformado.model.entity.enums.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,5 +15,5 @@ public interface ITareaService {
     void delete(Tarea tarea);
     boolean existsById(Long id);
     List<Tarea> findAll();
-    Page<TareaDto> findByWorkerEmail(String workerEmail, Pageable pageable);
+    Page<TareaDto> findByWorkerEmail(String workerEmail, Status estado, Pageable pageable);
 }
