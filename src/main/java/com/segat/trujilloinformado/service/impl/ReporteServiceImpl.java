@@ -3,6 +3,7 @@ package com.segat.trujilloinformado.service.impl;
 import com.segat.trujilloinformado.model.dao.ReporteDao;
 import com.segat.trujilloinformado.model.dto.ReporteDto;
 import com.segat.trujilloinformado.model.dto.reporte.IndicadoresDto;
+import com.segat.trujilloinformado.model.dto.reporte.RateReporteDto;
 import com.segat.trujilloinformado.model.dto.reporte.ReporteSpecification;
 import com.segat.trujilloinformado.model.entity.Reporte;
 import com.segat.trujilloinformado.model.entity.Usuario;
@@ -182,6 +183,33 @@ public class ReporteServiceImpl implements IReporteService {
     @Override
     public void delete(Reporte reporte) {
         reporteDao.delete(reporte);
+    }
+
+    @Override
+    public Reporte calificarReporte(Long reporteId, String citizenEmail, RateReporteDto dto) {
+        // Buscar reporte y verificar que pertenezca al ciudadano
+        Reporte reporte = reporteDao.findById(reporteId)
+                .orElseThrow(() -> new IllegalArgumentException("El reporte con ID " + reporteId + " no existe."));
+
+        if (!reporte.getCitizen().getEmail().equals(citizenEmail)) {
+            throw new IllegalArgumentException("El reporte no pertenece al ciudadano con email " + citizenEmail + ".");
+        }
+
+        // AC #1: Solo si está RESUELTO
+        if (reporte.getStatus() != Status.RESUELTO) {
+            throw new IllegalStateException("Solo se pueden calificar reportes en estado RESUELTO.");
+        }
+
+        // AC #6: No modificar si ya fue calificado (Inmutabilidad)
+        if (reporte.getRating() != null) {
+            throw new IllegalStateException("Este reporte ya ha sido calificado.");
+        }
+
+        // Guardar datos
+        reporte.setRating(dto.getRating());
+        reporte.setFeedbackComment(dto.getComment());
+
+        return reporteDao.save(reporte);
     }
 
     @Override

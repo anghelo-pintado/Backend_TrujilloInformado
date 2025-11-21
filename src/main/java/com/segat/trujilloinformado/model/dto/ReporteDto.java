@@ -27,6 +27,7 @@ public class ReporteDto {
     private Priority priority;
     private String zone;
     private Status status;
+    private Integer rating;
     private String citizenId;
     private String citizenName;
     private String citizenPhone;

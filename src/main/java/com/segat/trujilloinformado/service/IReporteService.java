@@ -2,6 +2,7 @@ package com.segat.trujilloinformado.service;
 
 import com.segat.trujilloinformado.model.dto.ReporteDto;
 import com.segat.trujilloinformado.model.dto.reporte.IndicadoresDto;
+import com.segat.trujilloinformado.model.dto.reporte.RateReporteDto;
 import com.segat.trujilloinformado.model.entity.Reporte;
 import com.segat.trujilloinformado.model.entity.enums.Status;
 import com.segat.trujilloinformado.model.entity.enums.Type;
@@ -10,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 public interface IReporteService {
     Reporte save(ReporteDto reporteDto);
@@ -36,6 +39,7 @@ public interface IReporteService {
             LocalDate startDate,
             LocalDate endDate);
     void delete(Reporte reporte);
+    Reporte calificarReporte(Long reporteId, String citizenEmail, RateReporteDto dto);
     boolean existsById(Long id);
     List<Reporte> findAll();
     Page<Reporte> findAll(Pageable pageable);

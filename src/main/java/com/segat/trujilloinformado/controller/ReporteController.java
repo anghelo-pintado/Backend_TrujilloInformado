@@ -2,6 +2,7 @@ package com.segat.trujilloinformado.controller;
 
 import com.segat.trujilloinformado.model.dto.ReporteDto;
 import com.segat.trujilloinformado.model.dto.reporte.IndicadoresDto;
+import com.segat.trujilloinformado.model.dto.reporte.RateReporteDto;
 import com.segat.trujilloinformado.model.entity.Reporte;
 import com.segat.trujilloinformado.model.entity.Usuario;
 import com.segat.trujilloinformado.model.entity.enums.Status;
@@ -12,6 +13,7 @@ import com.segat.trujilloinformado.service.IPdfService;
 import com.segat.trujilloinformado.service.IReporteService;
 import com.segat.trujilloinformado.service.IUsuarioService;
 import com.segat.trujilloinformado.service.impl.CloudinaryService;
+import jakarta.validation.Valid;
 import org.apache.catalina.LifecycleState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -34,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -271,6 +274,7 @@ public class ReporteController {
                 .priority(reporte.getPriority())
                 .zone(reporte.getZone().getName())
                 .status(reporte.getStatus())
+                .rating(reporte.getRating())
                 .citizenId(reporte.getCitizen() != null ? String.valueOf(reporte.getCitizen().getId()) : null)
                 .citizenName(reporte.getCitizen() != null ? reporte.getCitizen().getFirstname() + " " + reporte.getCitizen().getLastname() : null)
                 .citizenPhone(reporte.getCitizen() != null ? reporte.getCitizen().getPhone() : null)
@@ -312,6 +316,18 @@ public class ReporteController {
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(new InputStreamResource(pdfInputStream));
+    }
+
+    @PatchMapping("/reporte/{id}/rate")
+    public ResponseEntity<?> rateReport(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody RateReporteDto dto) {
+
+        reporteService.calificarReporte(id, userDetails.getUsername(), dto);
+
+        // AC #5: Mensaje de confirmación (se puede enviar en el body o manejar en front)
+        return ResponseEntity.ok(Map.of("message", "Gracias por su retroalimentación"));
     }
 
     @PostMapping("/reporte/cargar")

@@ -54,6 +54,12 @@ public class Reporte {
     @JoinColumn(name = "zone_id")
     private Zona zone;
 
+    @Column(nullable = true)
+    private Integer rating; // 1, 2, 3, 4, 5
+
+    @Column(length = 500, nullable = true)
+    private String feedbackComment;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_to")
     private Usuario assignedTo;
