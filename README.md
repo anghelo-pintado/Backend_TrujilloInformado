@@ -53,8 +53,8 @@ La aplicación depende de varias variables de entorno para su configuración (ve
     *   `CLOUDINARY_API_SECRET`: Tu API Secret.
 
 *   **n8n (Webhooks):**
-    *   `N8N_NEW_REPORT`: URL del webhook para nuevos reportes.
-    *   `N8N_NEW_TASK`: URL del webhook para nuevas tareas.
+    *   `N8N_NEW_REPORT`: URL del webhook para el envio de nuevos reportes por WhatsApp.
+    *   `N8N_NEW_TASK`: URL del webhook para el envio de nuevas tareas por WhatsApp.
 
 *   **Servidor (Opcional):**
     *   `PORT`: Puerto de la aplicación (por defecto 8080).
